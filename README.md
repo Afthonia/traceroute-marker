@@ -47,3 +47,5 @@ To mark the locations, the browser may ask for permission to access geolocation 
 When the host address is sent, it may take a little while to fetch the latitude and longitude of the route IP from the external API.
 
 PS: Most of the code blocks that are wrapped as comments will be used to improve the efficiency and responsiveness of the website in the future and are not completed.
+
+PS2: There are small issues about drawing the routes between markers and they will be fixed or the API for maps will be changed.
