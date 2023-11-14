@@ -13,7 +13,7 @@ After cloning this repository, an API key must be provided in order to perform t
 
 From this web site, the developer needs to register and get an API key by selecting one of the membership packages (Free version is adequate for this project).
 
-API key should be pasted instead of API-KEY on line 113.
+API key should be pasted instead of API-KEY on line 113 in index.html file.
 
 In order to manage requests, pages etc. 'chi' is used. It can be installed as following:
 
