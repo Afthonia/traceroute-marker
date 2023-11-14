@@ -42,7 +42,7 @@ The port is ':80', and since ports below 1024 require authority, 'sudo' must be 
 
 The above command will run the server and that can be seen when 'Server Started!' text is printed out. The traceroute hops and the response json list will be printed out on the server console as the user sends requests and the server can be closed with Ctrl+C shortcut.
 
-######WARNING: Do not use Ctrl+Z to exit because although it can seem like the server closed, unless the terminal window is closed and a new one is opened, it is not possible to run the server again.
+#####WARNING: Do not use Ctrl+Z to exit because although it can seem like the server closed, unless the terminal window is closed and a new one is opened, it is not possible to run the server again.
 
 After running the program, simply type '127.0.0.1', '127.0.0.1:80', 'localhost', or 'localhost:80' in the browser to view the website.
 
