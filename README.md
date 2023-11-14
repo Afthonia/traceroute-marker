@@ -32,7 +32,7 @@ The program can be run with the following command:
 ##### Linux:
 `sudo make run`
 
-#### MacOS / Windows
+##### MacOS / Windows:
 `make run`
 
 The port is ':80' and since the ports that are under 1024 is required authority, 'sudo' must be used in this case.
