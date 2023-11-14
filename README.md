@@ -15,7 +15,7 @@ From this web site, the developer needs to register and get an API key by select
 
 API key should be pasted instead of API-KEY on line 113 in index.html file.
 
-In order to manage requests, pages etc. 'chi' is used. It can be installed as following:
+In order to manage requests, pages etc. 'chi' is used. It can be installed as following (but it is already installed):
 
 `go get -u github.com/go-chi/chi/v5`
 
