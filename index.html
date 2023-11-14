@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
+
+    <style>
+        body {
+            background: #f3ebeb;
+        }
+
+        /* #container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        #trace-table {
+            display: none;
+            margin: 70px 20px;
+            border-spacing: 0px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #trace-table td,
+        #trace-table th {
+            border-spacing: 0px;
+            border: 1px solid #ddd;
+            border-style: none;
+            padding: 8px;
+        }
+
+        td,
+        th {
+            width: 25%;
+
+        }
+
+        #trace-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #trace-table tr:hover {
+            background-color: #ddd;
+        } */
+
+        #map {
+            /* grid-column: 2/3; */
+            display: flex;
+            width: 80%;
+            height: 500px;
+            margin: 5% 10%;
+        }
+    </style>
+</head>
+
+<body>
+    <h3 id="t" style="color: rgb(97, 59, 59);">Trace Marker</h3>
+    <input type="text" id="domain" placeholder="Host address" />
+    <button onclick="sendJSONdata()">
+        Trace
+    </button>
+
+    <!-- <h1> {{ .Domain }} </h1> -->
+
+    <!-- <div id="container"> -->
+    <!-- <div id="trace-table">
+            <table>
+                <tr>
+                    <th>Hop</th>
+                    <th>IP</th>
+                    <th>City</th>
+                    <th>Country</th>
+                </tr>
+                {{range .}}
+                <tr>
+                    <td>1</td>
+                    <td>{{ .IP }}</td>
+                    <td>{{ .City }}</td>
+                    <td>{{ .Country }}</td>
+                </tr>
+                {{end}}
+            </table>
+        </div> -->
+    <div id="map"></div>
+    <!-- </div> -->
+
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
+
+
+    <script>
+
+        function changeText(newText) {
+            document.getElementById("t").innerHTML = newText;
+        }
+
+        // function addTrace(hop, ip, city, country) {
+        //     document.getElementById("trace-table").style.display = "inline";
+        //     var table = document.getElementById("trace-table");
+        //     var row = table.insertRow();
+
+        //     row.insertCell(0).innerHTML = `${hop}`;
+        //     row.insertCell(1).innerHTML = ip;
+        //     row.insertCell(2).innerHTML = city;
+        //     row.insertCell(3).innerHTML = country;
+        // }
+
+        // Initialize communication with the platform
+        const platform = new H.service.Platform({
+            apikey: '365HqR5LsMBXPVmdeZDtBV1klCkFg7L13RsyYu9iXwA'
+        });
+
+        // Default options for the base layers that are used to render a map
+        var defaultLayers = platform.createDefaultLayers();
+
+        // Initialize the map
+        var map = new H.Map(document.getElementById('map'),
+            defaultLayers.vector.normal.map, {
+            zoom: 4,
+            center: { lat: 37.21807, lng: 28.3665 } // Coordinates for Munich, Germany
+        }
+        );
+
+        // add a resize listener to make sure that the map occupies the whole container
+        window.addEventListener('resize', () => map.getViewPort().resize());
+
+        // MapEvents enables the event system
+        // Behavior implements default interactions for pan/zoom (also on mobile touch environments)
+        var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+
+        // Create the default UI components
+        var ui = H.ui.UI.createDefault(map, defaultLayers);
+
+        //Create a group for our markers
+        var group = new H.map.Group();
+        map.addObject(group);
+
+        //Let's add a click event to the group, and we'll display the data set to individual marker
+        group.addEventListener('tap', function (evt) {
+
+            var bubble = new H.ui.InfoBubble(evt.target.getGeometry(), {
+                content: evt.target.getData()
+            });
+
+            ui.addBubble(bubble);
+        }, false);
+
+
+        function markMap(location_list) {
+            // Define a callback function to process the routing response:
+            var onResult = function (result) {
+                // ensure that at least one route was found
+                if (result.routes.length) {
+                    result.routes[0].sections.forEach((section) => {
+                        // Create a linestring to use as a point source for the route line
+                        let linestring = H.geo.LineString.fromFlexiblePolyline(section.polyline);
+
+                        // Create a polyline to display the route:
+                        let routeLine = new H.map.Polyline(linestring, {
+                            style: { strokeColor: 'navy', lineWidth: 3 }
+                        });
+
+                        // Create a marker for the start point:
+                        let startMarker = new H.map.Marker(section.departure.place.location);
+
+                        // Create a marker for the end point:
+                        let endMarker = new H.map.Marker(section.arrival.place.location);
+
+                        // Add the route polyline and the two markers to the map:
+                        map.addObjects([routeLine, startMarker, endMarker]);
+                    });
+                }
+            };
+
+            const locations = location_list;
+
+            map.removeObjects(map.getObjects());
+            var group = new H.map.Group();
+            map.addObject(group);
+
+            var my_lat = 0;
+            var my_lon = 0;
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    my_lat = position.coords.latitude;
+                    my_lon = position.coords.longitude;
+
+                    var myLocation = new H.map.Marker({ lat: my_lat, lng: my_lon });
+                    myLocation.setData("<div><p>Hello!</p></div>");
+                    group.addObject(myLocation);
+
+                    for (let index = 0; index < locations.length; index++) {
+                        if (locations[index]["status"] == "success") {
+                            var marker = new H.map.Marker({ lat: locations[index]["lat"], lng: locations[index]["lon"] });
+                            marker.setData(`<div><p>${locations[index]['country_name']}, ${locations[index]['city']}</p><p>${locations[index]['query']}</p></div>`);
+                            group.addObject(marker);
+
+                            //addTrace(1, locations[index]["query"], locations[index]["city"], locations[index]["country"]);
+
+                            // Get an instance of the routing service version 8:
+                            var router = platform.getRoutingService(null, 8);
+
+                            // Create the parameters for the routing request:
+                            var routingParameters = {
+                                'routingMode': 'fast',
+                                'transportMode': 'truck',
+                                // The start point of the route:
+                                'origin': index >= 1 ? `${locations[index - 1]["lat"]},${locations[index - 1]["lon"]}` : `${locations[index]["lat"]},${locations[index]["lon"]}`,
+                                // The end point of the route:
+                                'destination': `${locations[index]["lat"]},${locations[index]["lon"]}`,
+                                // Include the route shape in the response
+                                'return': 'polyline'
+                            };
+
+                            router.calculateRoute(routingParameters, onResult, function (error) {
+                                alert(error.message);
+                            });
+                        }
+                    }
+                });
+            } else {
+                changeText("Geolocation is not supported by this browser.");
+            }
+        }
+
+
+
+
+        function sendJSONdata() {
+            var domain = document.getElementById("domain");
+
+            if (domain.value != "") {
+                fetch(`/trace?destination=${domain.value}`)
+                    .then((response) => {
+                        if (response.status == 404) {
+                            alert("Host could not be found!");
+                            return;
+                        } else if (response.status == 500) {
+                            alert("The server could not fetch the traces.");
+                            return;
+                        } else {
+                            return response.json(); // Return the parsed JSON data
+                        }
+                    })
+                    .then((json) => {
+                        if (json == null) {
+                            alert("there is nothing here");
+                            return;
+                        } else {
+                            //alert("data is here");
+                            markMap(json);
+                        }
+                    })
+                    .catch((error) => {
+                        alert("An error occurred while fetching the data:", error);
+                    });
+
+            } else {
+                alert("Please provide a valid domain!");
+            }
+        }
+    </script>
+</body>
+
+</html>
