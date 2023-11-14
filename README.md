@@ -29,7 +29,7 @@ In go, to run the program, all the necessary files with .go extention must be ru
 
 The program can be run with the following command:
 
-##### Linux
+##### Linux:
 `sudo make run`
 
 #### MacOS / Windows
